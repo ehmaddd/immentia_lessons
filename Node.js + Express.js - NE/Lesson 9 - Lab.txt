@@ -1,0 +1,44 @@
+// index.js
+
+const express = require('express');
+const app = express();
+
+// Middleware to log requests
+function logRequest(req, res, next) {
+    console.log(`Received ${req.method} request for ${req.url}`);
+    next();
+}
+
+app.use(logRequest);
+
+// Sample in-memory data store
+let users = [];
+
+// Routes
+app.get('/users', (req, res) => {
+    res.json(users);
+});
+
+app.post('/users', (req, res) => {
+    const newUser = req.body;
+    users.push(newUser);
+    res.send('User added successfully');
+});
+
+app.put('/users/:id', (req, res) => {
+    const userId = req.params.id;
+    const updatedUser = req.body;
+    users[userId] = updatedUser;
+    res.send(`User with ID ${userId} updated successfully`);
+});
+
+app.delete('/users/:id', (req, res) => {
+    const userId = req.params.id;
+    users = users.filter((user, index) => index !== userId);
+    res.send(`User with ID ${userId} deleted successfully`);
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

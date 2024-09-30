@@ -1,0 +1,102 @@
+const credentials = () => {
+    return {
+        username: "postgres",
+        password: "abcdef"
+    };
+}
+
+module.exports = credentials;
+
+-----------------------------------------------------
+
+const credentials = require('./credentials');
+const { Sequelize } = require('sequelize');
+
+const {username, password} = credentials();
+
+// Initialize Sequelize
+const sequelize = new Sequelize('test', username, password, {
+  host: 'localhost',
+  dialect: 'postgres'
+});
+
+module.exports = sequelize;
+
+------------------------------------------------------
+
+const sequelize = require('./database');
+
+async function checkConnectivity () {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+}
+
+// Function to create a table
+async function createTable() {
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS userTable (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE
+    )
+  `);
+}
+
+// Function to insert a new user
+async function createUser(name, email) {
+  await sequelize.query(
+    'INSERT INTO userTable (name, email) VALUES (?, ?)',
+    {
+      replacements: [name, email]
+    }
+  );
+}
+
+// Function to get all users
+async function getUsers() {
+  const [results] = await sequelize.query('SELECT * FROM userTable');
+  return results;
+}
+
+// Function to update a user
+async function updateUser(id, newName, newEmail) {
+  await sequelize.query(
+    'UPDATE userTable SET name = ?, email = ? WHERE id = ?',
+    {
+      replacements: [newName, newEmail, id]
+    }
+  );
+}
+
+// Function to delete a user
+async function deleteUser(id) {
+  await sequelize.query('DELETE FROM userTable WHERE id = ?', {
+    replacements: [id]
+  });
+}
+
+// Run CRUD operations
+(async () => {
+
+  await checkConnectivity();
+
+  await createTable(); // Create the table if it doesn't exist
+
+  await createUser('John Doe', 'john.doe@example.com'); // Create a new user
+
+  const users = await getUsers(); // Read all users
+  console.log('All users:', users);
+
+  // Update the user with ID 1
+  await updateUser(1, 'John Smith', 'john.smith@example.com');
+
+  // Delete the user with ID 1
+  await deleteUser(1);
+
+  const updatedUsers = await getUsers(); // Read all users again
+  console.log('Updated users:', updatedUsers);
+})();
