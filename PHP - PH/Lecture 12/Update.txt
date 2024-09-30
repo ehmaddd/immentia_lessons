@@ -1,0 +1,61 @@
+HTML
+----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update User Name</title>
+</head>
+<body>
+  <h1>Update User Name</h1>
+  <form action="update_user.php" method="post">
+    <label for="user_id">User ID:</label>
+    <input type="number" id="user_id" name="user_id" required>
+    <br>
+    <label for="new_name">New Name:</label>
+    <input type="text" id="new_name" name="new_name" required>
+    <br>
+    <button type="submit">Update Name</button>
+  </form>
+</body>
+</html>
+
+++++++++++++++++++++++++++++++++++++++++++
+PHP
+----
+<?php
+
+// Database connection details (replace with your actual credentials)
+$servername = "localhost";
+$username = "ahmad";
+$password = "sql_123";
+$dbname = "test";
+
+// Create connection
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// Check connection
+if (!$conn) {
+  die("Connection failed: " . mysqli_connect_error());
+}
+
+// Get user ID and new name from form
+$user_id = $_POST['user_id'];
+$new_name = $_POST['new_name'];
+
+// Escape user input (important!)
+$user_id = mysqli_real_escape_string($conn, $user_id);
+$new_name = mysqli_real_escape_string($conn, $new_name);
+
+// Update user name
+$sql = "UPDATE users SET username = '$new_name' WHERE id = $user_id";
+
+if (mysqli_query($conn, $sql)) {
+  echo "<h2>User Name Updated Successfully!</h2>";
+} else {
+  echo "<h2>Error Updating Name: " . mysqli_error($conn) . "</h2>";
+}
+
+mysqli_close($conn);
+
+?>
